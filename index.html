@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planificación de actividades sabatinas</title>
+    <style>
+        :root {
+            --primary: #2c3e50;    /* Color Principal (Títulos, Botones) */
+            --secondary: #ecf0f1;  /* Color Secundario (Fondos suaves) */
+            --accent: #3498db;     /* Color Acento (Bordes, Detalles) */
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f5f5f5; 
+            color: #333;
+        }
+
+        /* --- ENCABEZADO Y CONFIGURACIÓN --- */
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border-top: 5px solid var(--primary);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 { margin: 0; color: var(--primary); font-size: 24px; }
+
+        .color-controls {
+            display: flex;
+            gap: 15px;
+            background: var(--secondary);
+            padding: 10px;
+            border-radius: 50px;
+        }
+
+        .color-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        input[type="color"] {
+            border: none;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            background: none;
+            padding: 0;
+        }
+
+        /* --- FORMULARIOS --- */
+        .seccion { 
+            background: white; 
+            padding: 25px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            border-left: 5px solid var(--accent);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+
+        h2 { margin-top: 0; color: var(--primary); font-size: 18px; border-bottom: 1px solid var(--secondary); padding-bottom: 10px; }
+        
+        label { display: block; margin-top: 12px; font-weight: 600; font-size: 14px; color: #444; }
+        
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 5px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-family: inherit;
+        }
+        input:focus, textarea:focus { 
+            outline: none; 
+            border-color: var(--accent); 
+            box-shadow: 0 0 0 3px var(--secondary);
+        }
+
+        /* --- BOTONES --- */
+        .btn-group { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        button { 
+            background-color: var(--primary); 
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+        
+        button.secondary { background-color: #7f8c8d; }
+        
+        button.add { 
+            background-color: white; 
+            color: var(--primary); 
+            border: 2px dashed var(--primary); 
+            width: 100%;
+            margin-top: 15px;
+        }
+        button.add:hover { background-color: var(--secondary); border-style: solid; }
+
+        /* --- TARJETAS DE ACTIVIDAD --- */
+        .actividad-extra { 
+            background-color: var(--secondary);
+            padding: 20px; 
+            margin-top: 20px; 
+            border-radius: 8px;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .btn-remove {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- PESTAÑAS Y SALIDA --- */
+        .tabs { margin-top: 30px; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
+        .tab { 
+            padding: 10px 20px; 
+            cursor: pointer; 
+            background: none; 
+            border: none; 
+            font-size: 16px; 
+            color: #666;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab.active { 
+            color: var(--primary); 
+            border-bottom-color: var(--primary); 
+            font-weight: bold;
+        }
+
+        .output-area { display: none; }
+        .output-area.active { display: block; }
+
+        #resultado-texto { width: 100%; height: 300px; font-family: monospace; background: #eee; border: none; padding: 15px; }
+
+        /* --- VISTA PREVIA DEL DOCUMENTO --- */
+        #vista-previa {
+            background: white;
+            padding: 40px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            color: black;
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.5;
+            border-top: 10px solid var(--primary);
+        }
+        
+        .doc-header { 
+            text-align: center; 
+            border-bottom: 2px solid var(--accent); 
+            padding-bottom: 15px; 
+            margin-bottom: 25px; 
+        }
+        .doc-header h1 { 
+            color: var(--primary); 
+            text-transform: uppercase; 
+            font-size: 24px; 
+            letter-spacing: 1px; 
+            margin-bottom: 5px;
+            font-family: sans-serif;
+        }
+        
+        .doc-activity {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+        }
+        
+        .doc-activity-title {
+            background-color: var(--secondary);
+            color: var(--primary);
+            padding: 8px 12px;
+            font-family: sans-serif;
+            font-weight: bold;
+            font-size: 16px;
+            border-left: 5px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .doc-details {
+            margin-top: 10px;
+            padding-left: 17px; /* Indentación visual */
+        }
+
+        .doc-field { margin-bottom: 5px; }
+        .doc-label { font-weight: bold; color: #444; font-family: sans-serif; font-size: 0.9em; }
+
+        /* --- ESTILOS DE IMPRESIÓN --- */
+        @media print {
+            body * { visibility: hidden; }
+            #vista-previa, #vista-previa * { visibility: visible; }
+            #vista-previa { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                margin: 0; 
+                padding: 0; 
+                box-shadow: none; 
+                border: none;
+            }
+            .doc-activity-title { 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+                background-color: #eee !important; /* Fallback para imprimir seguro */
+                color: #000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="no-print">
+        <div class="header-top">
+            <h1>Planificación de actividades sabatinas</h1>
+            <div class="color-controls">
+                <div class="color-group">
+                    <label>Principal</label>
+                    <input type="color" id="colPrimary" value="#2c3e50" oninput="updateColors()">
+                </div>
+                <div class="color-group">
+                    <label>Secundario</label>
+                    <input type="color" id="colSecondary" value="#ecf0f1" oninput="updateColors()">
+                </div>
+                <div class="color-group">
+                    <label>Acento</label>
+                    <input type="color" id="colAccent" value="#3498db" oninput="updateColors()">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- FORMULARIOS -->
+    <div class="no-print">
+        <div class="seccion">
+            <h2>1. Datos Generales</h2>
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
+                <div>
+                    <label>Fecha:</label>
+                    <input type="text" id="fecha" placeholder="Ej. 7 de Febrero de 2024">
+                </div>
+                <div>
+                    <label>Ubicación:</label>
+                    <input type="text" id="ubicacion" value="Jardín del arte (Parque Tlacoquemécatl)">
+                </div>
+            </div>
+        </div>
+
+        <div class="seccion" id="contenedor-actividades">
+            <h2>2. Actividades del Día</h2>
+            <div id="lista-actividades"></div>
+            <button type="button" class="add" onclick="agregarActividad()">+ Agregar Nueva Actividad</button>
+        </div>
+
+        <div class="btn-group">
+            <button onclick="generarDocumento()">Generar Documento</button>
+            <button class="secondary" onclick="window.print()">Imprimir / Guardar PDF</button>
+        </div>
+    </div>
+
+    <!-- SALIDAS -->
+    <div class="tabs no-print">
+        <button class="tab active" onclick="mostrarTab('vista')">Vista Previa</button>
+        <button class="tab" onclick="mostrarTab('texto')">Texto Copiable</button>
+    </div>
+
+    <!-- VISTA IMPRIMIBLE -->
+    <div id="vista-previa" class="output-area active">
+        <div class="doc-header">
+            <h1 id="doc-titulo">Planeación Sábado</h1>
+            <p id="doc-subtitulo" style="font-size: 14px; color: #555;">Ubicación: ...</p>
+        </div>
+
+        <div id="doc-actividades-lista">
+            <!-- Las actividades aparecerán aquí -->
+            <p style="text-align: center; color: #999; padding: 20px;">
+                <em>Llena los datos y presiona "Generar Documento" para ver la vista previa.</em>
+            </p>
+        </div>
+    </div>
+
+    <!-- TEXTO SIMPLE -->
+    <div id="texto-simple" class="output-area">
+        <textarea id="resultado-texto" readonly></textarea>
+    </div>
+
+    <script>
+        // Actualizar variables CSS en tiempo real
+        function updateColors() {
+            const primary = document.getElementById('colPrimary').value;
+            const secondary = document.getElementById('colSecondary').value;
+            const accent = document.getElementById('colAccent').value;
+
+            const root = document.documentElement;
+            root.style.setProperty('--primary', primary);
+            root.style.setProperty('--secondary', secondary);
+            root.style.setProperty('--accent', accent);
+        }
+
+        function agregarActividad() {
+            const div = document.createElement('div');
+            div.className = 'actividad-extra';
+            div.innerHTML = `
+                <button class="btn-remove" onclick="this.parentElement.remove()" title="Eliminar actividad">×</button>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+                    <div>
+                        <label>Nombre de la Actividad:</label>
+                        <input type="text" class="act-nombre" placeholder="Ej. Concurso de Formaciones">
+                    </div>
+                    <div>
+                        <label>Horario / Duración:</label>
+                        <input type="text" class="act-horario" placeholder="Ej. 10:00 - 10:20 (20 min)">
+                    </div>
+                </div>
+                
+                <label>Objetivo:</label>
+                <input type="text" class="act-objetivo" placeholder="¿Qué se busca lograr?">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label>Encargado:</label>
+                        <input type="text" class="act-encargado">
+                    </div>
+                    <div>
+                        <label>Materiales:</label>
+                        <input type="text" class="act-materiales">
+                    </div>
+                </div>
+
+                <label>Procedimiento:</label>
+                <textarea class="act-procedimiento" rows="4" placeholder="Describa las reglas y pasos..."></textarea>
+            `;
+            document.getElementById('lista-actividades').appendChild(div);
+        }
+
+        // Iniciar con una actividad vacía
+        window.onload = function() {
+            agregarActividad();
+        };
+
+        function mostrarTab(tabName) {
+            document.querySelectorAll('.output-area').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            
+            if (tabName === 'vista') {
+                document.getElementById('vista-previa').classList.add('active');
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+            } else {
+                document.getElementById('texto-simple').classList.add('active');
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+            }
+        }
+
+        function generarDocumento() {
+            const fecha = document.getElementById('fecha').value || "[Fecha]";
+            const ubicacion = document.getElementById('ubicacion').value;
+
+            // --- 1. Generar Vista Previa (HTML) ---
+            document.getElementById('doc-titulo').innerText = `Planeación ${fecha}`;
+            document.getElementById('doc-subtitulo').innerText = `Ubicación: ${ubicacion}`;
+
+            const listaHTML = document.getElementById('doc-actividades-lista');
+            listaHTML.innerHTML = ''; // Limpiar
+
+            // --- 2. Generar Texto Simple ---
+            let texto = `PLANIFICACIÓN DE ACTIVIDADES SABATINAS ${fecha.toUpperCase()}\n`;
+            texto += `Ubicación: ${ubicacion}\n`;
+            texto += `========================================\n\n`;
+
+            const actividades = document.querySelectorAll('.actividad-extra');
+            
+            if (actividades.length === 0) {
+                listaHTML.innerHTML = '<p style="text-align:center">No hay actividades registradas.</p>';
+            }
+
+            actividades.forEach((act) => {
+                const nombre = act.querySelector('.act-nombre').value || "(Sin nombre)";
+                const horario = act.querySelector('.act-horario').value || "";
+                const objetivo = act.querySelector('.act-objetivo').value || "-";
+                const encargado = act.querySelector('.act-encargado').value || "-";
+                const material = act.querySelector('.act-materiales').value || "-";
+                const proced = act.querySelector('.act-procedimiento').value || "-";
+
+                // Agregar al HTML (Vista Previa)
+                const divAct = document.createElement('div');
+                divAct.className = 'doc-activity';
+                divAct.innerHTML = `
+                    <div class="doc-activity-title">
+                        <span>${nombre}</span>
+                        <span>${horario}</span>
+                    </div>
+                    <div class="doc-details">
+                        <div class="doc-field"><span class="doc-label">Objetivo:</span> ${objetivo}</div>
+                        <div class="doc-field"><span class="doc-label">Encargado:</span> ${encargado} &nbsp;|&nbsp; <span class="doc-label">Material:</span> ${material}</div>
+                        <div class="doc-field" style="margin-top:10px;">
+                            <span class="doc-label">Procedimiento:</span><br>
+                            <span style="white-space: pre-wrap; font-style: italic;">${proced}</span>
+                        </div>
+                    </div>
+                `;
+                listaHTML.appendChild(divAct);
+
+                // Agregar al Texto Simple
+                texto += `▶ ${nombre.toUpperCase()} (${horario})\n`;
+                texto += `Objetivo: ${objetivo}\n`;
+                texto += `Encargado: ${encargado} | Material: ${material}\n`;
+                texto += `Procedimiento:\n${proced}\n`;
+                texto += `----------------------------------------\n\n`;
+            });
+
+            document.getElementById('resultado-texto').value = texto;
+        }
+    </script>
+</body>
+</html>
