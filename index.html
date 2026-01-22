@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planificación de actividades sabatinas</title>
+    <title>Planificación de actividades sabatinas - Nivel Pro</title>
     <style>
         :root {
-            --primary: #2c3e50;    /* Color Principal (Títulos, Botones) */
-            --secondary: #ecf0f1;  /* Color Secundario (Fondos suaves) */
-            --accent: #3498db;     /* Color Acento (Bordes, Detalles) */
+            --primary: #2c3e50;    
+            --secondary: #ecf0f1;  
+            --accent: #3498db;     
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #c0392b;
         }
 
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            max-width: 900px; 
+            max-width: 950px; 
             margin: 0 auto; 
             padding: 20px; 
             background-color: #f5f5f5; 
             color: #333;
+            padding-bottom: 120px;
         }
 
-        /* --- ENCABEZADO Y CONFIGURACIÓN --- */
+        /* --- ENCABEZADO --- */
         header {
             background: white;
             padding: 20px;
@@ -30,220 +34,91 @@
             border-top: 5px solid var(--primary);
         }
 
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
+        .header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
         h1 { margin: 0; color: var(--primary); font-size: 24px; }
+        .color-controls { display: flex; gap: 10px; background: var(--secondary); padding: 8px 15px; border-radius: 50px; }
+        input[type="color"] { border: none; width: 25px; height: 25px; cursor: pointer; background: none; padding: 0; }
 
-        .color-controls {
-            display: flex;
-            gap: 15px;
-            background: var(--secondary);
-            padding: 10px;
-            border-radius: 50px;
+        /* --- PANEL DE PUNTUACIÓN --- */
+        #score-panel {
+            position: fixed; bottom: 20px; right: 20px; background: white; padding: 20px;
+            border-radius: 8px; box-shadow: 0 5px 30px rgba(0,0,0,0.25); z-index: 1000;
+            width: 300px; border-left: 8px solid var(--danger); transition: all 0.3s ease;
         }
-
-        .color-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 10px;
-            font-weight: bold;
-            color: #666;
-        }
-
-        input[type="color"] {
-            border: none;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            background: none;
-            padding: 0;
-        }
-
-        /* --- FORMULARIOS --- */
-        .seccion { 
-            background: white; 
-            padding: 25px; 
-            margin-bottom: 20px; 
-            border-radius: 8px; 
-            border-left: 5px solid var(--accent);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-        }
-
-        h2 { margin-top: 0; color: var(--primary); font-size: 18px; border-bottom: 1px solid var(--secondary); padding-bottom: 10px; }
+        #score-value { font-size: 32px; font-weight: 800; color: var(--primary); display: block; text-align: center; margin-bottom: 5px; }
+        #score-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #777; text-align: center; display: block; }
+        #missing-list { font-size: 12px; color: var(--danger); margin-top: 15px; padding-left: 20px; display: none; line-height: 1.4; max-height: 300px; overflow-y: auto; }
         
-        label { display: block; margin-top: 12px; font-weight: 600; font-size: 14px; color: #444; }
+        /* --- UI --- */
+        .seccion { 
+            background: white; padding: 25px; margin-bottom: 20px; 
+            border-radius: 8px; border-left: 5px solid var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .seccion-title { border-bottom: 1px solid var(--secondary); padding-bottom: 10px; margin-bottom: 20px; }
+        h2 { margin: 0; color: var(--primary); font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        label { display: block; margin-top: 15px; font-weight: 700; font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
         
         input[type="text"], textarea { 
-            width: 100%; 
-            padding: 10px; 
-            margin-top: 5px; 
-            border: 1px solid #ddd; 
-            border-radius: 4px; 
-            box-sizing: border-box; 
-            font-family: inherit;
+            width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; 
+            border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: 14px;
         }
-        input:focus, textarea:focus { 
-            outline: none; 
-            border-color: var(--accent); 
-            box-shadow: 0 0 0 3px var(--secondary);
-        }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent); background-color: #fbfbfb; }
 
+        .counter-badge { font-size: 11px; float: right; margin-top: -20px; background: #eee; padding: 2px 6px; border-radius: 4px; color: #666; }
+        .counter-badge.ok { background: var(--success); color: white; }
+        .counter-badge.bad { background: var(--warning); color: white; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
         /* --- BOTONES --- */
         .btn-group { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
-        
         button { 
-            background-color: var(--primary); 
-            color: white; 
-            padding: 12px 24px; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: bold;
-            transition: transform 0.1s, opacity 0.2s;
+            background-color: var(--primary); color: white; padding: 12px 24px; 
+            border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; text-transform: uppercase;
         }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        button:active { transform: translateY(0); }
-        
-        button.secondary { background-color: #7f8c8d; }
-        
-        button.add { 
-            background-color: white; 
-            color: var(--primary); 
-            border: 2px dashed var(--primary); 
-            width: 100%;
-            margin-top: 15px;
-        }
+        button:hover { opacity: 0.9; }
+        button.secondary { background-color: #95a5a6; }
+        button.add { background-color: white; color: var(--primary); border: 2px dashed var(--primary); width: 100%; margin-top: 20px; }
         button.add:hover { background-color: var(--secondary); border-style: solid; }
 
-        /* --- TARJETAS DE ACTIVIDAD --- */
-        .actividad-extra { 
-            background-color: var(--secondary);
-            padding: 20px; 
-            margin-top: 20px; 
-            border-radius: 8px;
-            position: relative;
-            border: 1px solid rgba(0,0,0,0.05);
+        /* --- TARJETAS --- */
+        .actividad-extra { background-color: #f8f9fa; padding: 25px; margin-top: 20px; border-radius: 8px; position: relative; border: 1px solid #e0e0e0; }
+        .actividad-counter { position: absolute; top: -10px; left: 20px; background: var(--primary); color: white; padding: 5px 10px; font-size: 12px; font-weight: bold; border-radius: 4px; }
+        .btn-remove { 
+            position: absolute; top: 15px; right: 15px; background: transparent; color: #999; 
+            border: 1px solid #ddd; width: 30px; height: 30px; border-radius: 4px; cursor: pointer;
+            font-size: 18px; display: flex; align-items: center; justify-content: center; 
         }
-        
-        .btn-remove {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .btn-remove:hover { background-color: var(--danger); color: white; border-color: var(--danger); }
 
-        /* --- PESTAÑAS Y SALIDA --- */
-        .tabs { margin-top: 30px; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
-        .tab { 
-            padding: 10px 20px; 
-            cursor: pointer; 
-            background: none; 
-            border: none; 
-            font-size: 16px; 
-            color: #666;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-        }
-        .tab.active { 
-            color: var(--primary); 
-            border-bottom-color: var(--primary); 
-            font-weight: bold;
-        }
-
+        /* --- PREVIEW --- */
+        .tabs { margin-top: 40px; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
+        .tab { padding: 12px 25px; cursor: pointer; background: none; border: none; font-size: 14px; color: #777; border-bottom: 3px solid transparent; margin-bottom: -2px; font-weight: 600; }
+        .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
         .output-area { display: none; }
         .output-area.active { display: block; }
+        #resultado-texto { width: 100%; height: 400px; font-family: monospace; background: #eee; border: none; padding: 20px; font-size: 13px; }
 
-        #resultado-texto { width: 100%; height: 300px; font-family: monospace; background: #eee; border: none; padding: 15px; }
-
-        /* --- VISTA PREVIA DEL DOCUMENTO --- */
-        #vista-previa {
-            background: white;
-            padding: 40px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            color: black;
-            font-family: 'Times New Roman', Times, serif;
-            line-height: 1.5;
-            border-top: 10px solid var(--primary);
-        }
+        #vista-previa { background: white; padding: 60px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); color: #000; font-family: 'Arial', sans-serif; line-height: 1.5; border-top: 10px solid var(--primary); }
+        .doc-header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+        .doc-header h1 { color: #000; font-size: 28px; text-transform: uppercase; margin: 0; letter-spacing: 2px; }
+        .doc-sub-title { font-weight: 800; color: #000; border-bottom: 1px solid #999; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; padding-bottom: 5px; }
+        .doc-table-grid { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        .doc-table-grid td { vertical-align: top; padding: 8px; border: 1px solid #ccc; font-size: 13px; }
+        .doc-label { font-weight: bold; color: #333; display: block; font-size: 11px; text-transform: uppercase; margin-bottom: 3px; }
         
-        .doc-header { 
-            text-align: center; 
-            border-bottom: 2px solid var(--accent); 
-            padding-bottom: 15px; 
-            margin-bottom: 25px; 
-        }
-        .doc-header h1 { 
-            color: var(--primary); 
-            text-transform: uppercase; 
-            font-size: 24px; 
-            letter-spacing: 1px; 
-            margin-bottom: 5px;
-            font-family: sans-serif;
-        }
-        
-        .doc-activity {
-            margin-bottom: 25px;
-            page-break-inside: avoid;
-        }
-        
-        .doc-activity-title {
-            background-color: var(--secondary);
-            color: var(--primary);
-            padding: 8px 12px;
-            font-family: sans-serif;
-            font-weight: bold;
-            font-size: 16px;
-            border-left: 5px solid var(--accent);
-            display: flex;
-            justify-content: space-between;
-        }
+        .doc-activity { border: 1px solid #ddd; margin-bottom: 20px; page-break-inside: avoid; }
+        .doc-activity-header { background: #f4f4f4; padding: 10px 15px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .doc-act-name { font-weight: 800; font-size: 16px; color: #000; text-transform: uppercase; }
+        .doc-act-body { padding: 15px; font-size: 14px; }
+        .doc-tag { display: inline-block; background: #eee; padding: 2px 6px; font-size: 11px; font-weight: bold; border-radius: 3px; margin-right: 5px; border: 1px solid #ccc; }
 
-        .doc-details {
-            margin-top: 10px;
-            padding-left: 17px; /* Indentación visual */
-        }
-
-        .doc-field { margin-bottom: 5px; }
-        .doc-label { font-weight: bold; color: #444; font-family: sans-serif; font-size: 0.9em; }
-
-        /* --- ESTILOS DE IMPRESIÓN --- */
         @media print {
             body * { visibility: hidden; }
             #vista-previa, #vista-previa * { visibility: visible; }
-            #vista-previa { 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
-                width: 100%; 
-                margin: 0; 
-                padding: 0; 
-                box-shadow: none; 
-                border: none;
-            }
-            .doc-activity-title { 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact; 
-                background-color: #eee !important; /* Fallback para imprimir seguro */
-                color: #000 !important;
-            }
+            #vista-previa { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; box-shadow: none; border: none; }
+            #score-panel { display: none !important; }
         }
     </style>
 </head>
@@ -251,136 +126,224 @@
 
     <header class="no-print">
         <div class="header-top">
-            <h1>Planificación de actividades sabatinas</h1>
+            <h1>Planificación Sabatina Pro</h1>
             <div class="color-controls">
-                <div class="color-group">
-                    <label>Principal</label>
-                    <input type="color" id="colPrimary" value="#2c3e50" oninput="updateColors()">
-                </div>
-                <div class="color-group">
-                    <label>Secundario</label>
-                    <input type="color" id="colSecondary" value="#ecf0f1" oninput="updateColors()">
-                </div>
-                <div class="color-group">
-                    <label>Acento</label>
-                    <input type="color" id="colAccent" value="#3498db" oninput="updateColors()">
-                </div>
+                <input type="color" id="colPrimary" value="#2c3e50" oninput="updateColors()">
+                <input type="color" id="colAccent" value="#3498db" oninput="updateColors()">
             </div>
         </div>
     </header>
 
-    <!-- FORMULARIOS -->
-    <div class="no-print">
+    <!-- PANEL DE PUNTUACIÓN -->
+    <div id="score-panel" class="no-print">
+        <span id="score-value">0%</span>
+        <span id="score-label">Calidad de Planeación</span>
+        <div style="height: 1px; background: #eee; margin: 10px 0;"></div>
+        <ul id="missing-list"></ul>
+    </div>
+
+    <!-- ÁREA DE EDICIÓN -->
+    <div class="no-print" oninput="calcularPuntaje()">
+        
+        <!-- 1. IDENTIDAD -->
         <div class="seccion">
-            <h2>1. Datos Generales</h2>
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
+            <div class="seccion-title"><h2>1. Datos Generales</h2></div>
+            <div class="grid-2">
+                <div>
+                    <label>Nombre de la Escuadra:</label>
+                    <input type="text" id="nombreEscuadra" placeholder="Ej. Escuadra Romanos">
+                </div>
                 <div>
                     <label>Fecha:</label>
-                    <input type="text" id="fecha" placeholder="Ej. 7 de Febrero de 2024">
+                    <input type="text" id="fecha" placeholder="Ej. Sábado 7 de Febrero">
                 </div>
+            </div>
+            <div class="grid-2">
                 <div>
                     <label>Ubicación:</label>
                     <input type="text" id="ubicacion" value="Jardín del arte (Parque Tlacoquemécatl)">
                 </div>
+                <div>
+                    <label>Gente Confirmada:</label>
+                    <textarea id="confirmados" rows="1" placeholder="Nombres de los asistentes..."></textarea>
+                </div>
             </div>
         </div>
 
+        <!-- 2. OBJETIVOS ESTRICTOS -->
+        <div class="seccion">
+            <div class="seccion-title"><h2>2. Objetivos y Metas</h2></div>
+            <div class="grid-2">
+                <div>
+                    <label>Objetivos Semestrales (Mínimo 3):</label>
+                    <span id="count-sem" class="counter-badge">0/3</span>
+                    <textarea id="objSemestral" rows="5" placeholder="1. Integración&#10;2. Técnica&#10;3. Mística..."></textarea>
+                </div>
+                <div>
+                    <label>Objetivos del Sábado (Mínimo 5):</label>
+                    <span id="count-sab" class="counter-badge">0/5</span>
+                    <textarea id="objSabado" rows="5" placeholder="- Objetivo 1&#10;- Objetivo 2&#10;- Objetivo 3&#10;- Objetivo 4&#10;- Objetivo 5"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. RECURSOS -->
+        <div class="seccion">
+            <div class="seccion-title"><h2>3. Recursos y Entregables</h2></div>
+            <div style="background: #fafafa; padding: 15px; border: 1px dashed #ccc; border-radius: 5px; margin-bottom: 15px;">
+                <label style="margin-top:0; color: var(--primary);">Entregable / Maqueta:</label>
+                <div class="grid-2">
+                    <input type="text" id="maquetaTema" placeholder="Tema (Ej. Nave Espacial)">
+                    <input type="text" id="maquetaSpecs" placeholder="Especificaciones (Ej. 30 palitos, 5 tejidos...)">
+                </div>
+            </div>
+            <div class="grid-2">
+                <div><label>Material Escuadra:</label><textarea id="matEscuadra" rows="2"></textarea></div>
+                <div><label>Material General:</label><textarea id="matGeneral" rows="2"></textarea></div>
+            </div>
+        </div>
+
+        <!-- 4. ACTIVIDADES ESTRICTAS -->
         <div class="seccion" id="contenedor-actividades">
-            <h2>2. Actividades del Día</h2>
+            <div class="seccion-title">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2>4. Desarrollo de Actividades</h2>
+                    <span style="font-size:12px; color:#666; font-weight:bold;">Mínimo 4 actividades requeridas</span>
+                </div>
+            </div>
             <div id="lista-actividades"></div>
-            <button type="button" class="add" onclick="agregarActividad()">+ Agregar Nueva Actividad</button>
+            <button type="button" class="add" onclick="agregarActividad()">+ AGREGAR ACTIVIDAD</button>
         </div>
 
         <div class="btn-group">
             <button onclick="generarDocumento()">Generar Documento</button>
-            <button class="secondary" onclick="window.print()">Imprimir / Guardar PDF</button>
+            <button class="secondary" onclick="window.print()">Imprimir PDF</button>
         </div>
     </div>
 
-    <!-- SALIDAS -->
+    <!-- TABS & OUTPUTS -->
     <div class="tabs no-print">
-        <button class="tab active" onclick="mostrarTab('vista')">Vista Previa</button>
-        <button class="tab" onclick="mostrarTab('texto')">Texto Copiable</button>
+        <button class="tab active" onclick="mostrarTab('vista')">VISTA PREVIA</button>
+        <button class="tab" onclick="mostrarTab('texto')">TEXTO PLANO</button>
     </div>
 
-    <!-- VISTA IMPRIMIBLE -->
     <div id="vista-previa" class="output-area active">
         <div class="doc-header">
-            <h1 id="doc-titulo">Planeación Sábado</h1>
-            <p id="doc-subtitulo" style="font-size: 14px; color: #555;">Ubicación: ...</p>
+            <h1 id="doc-escuadra">NOMBRE ESCUADRA</h1>
+            <h3>Planificación Sabatina | <span id="doc-fecha">Fecha</span></h3>
+            <p style="font-size: 12px; margin-top: 5px; color: #555;">UBICACIÓN: <span id="doc-ubicacion">Ubicación</span></p>
         </div>
 
-        <div id="doc-actividades-lista">
-            <!-- Las actividades aparecerán aquí -->
-            <p style="text-align: center; color: #999; padding: 20px;">
-                <em>Llena los datos y presiona "Generar Documento" para ver la vista previa.</em>
-            </p>
+        <!-- RESUMEN -->
+        <div class="doc-section">
+            <div class="doc-sub-title">Resumen Estratégico</div>
+            <table class="doc-table-grid">
+                <tr>
+                    <td width="50%">
+                        <span class="doc-label">Objetivos Semestrales (Mín. 3):</span>
+                        <div id="doc-obj-semestral" style="white-space: pre-line;">-</div>
+                    </td>
+                    <td width="50%">
+                        <span class="doc-label">Objetivos del Sábado (Mín. 5):</span>
+                        <div id="doc-obj-sabado" style="white-space: pre-line;">-</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="doc-label">Gente Confirmada:</span>
+                        <span id="doc-confirmados">-</span>
+                    </td>
+                    <td>
+                        <span class="doc-label">Entregable (Maqueta):</span>
+                        <span id="doc-maqueta">-</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- MATERIALES -->
+        <div class="doc-section">
+            <div class="doc-sub-title">Logística y Materiales</div>
+            <table class="doc-table-grid">
+                <tr>
+                    <td width="50%"><span class="doc-label">Material Escuadra:</span><span id="doc-mat-escuadra">-</span></td>
+                    <td width="50%"><span class="doc-label">Material General:</span><span id="doc-mat-general">-</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ACTIVIDADES -->
+        <div class="doc-section">
+            <div class="doc-sub-title">Itinerario de Actividades</div>
+            <div id="doc-actividades-lista"></div>
+        </div>
+
+        <div style="margin-top: 50px; border-top: 1px solid #ccc; padding-top: 10px; display: flex; justify-content: space-between; font-size: 11px; color: #777;">
+            <span>Documento generado con Planificador v6</span>
+            <span id="doc-calidad-final" style="font-weight: bold;">Calidad: 0%</span>
         </div>
     </div>
 
-    <!-- TEXTO SIMPLE -->
     <div id="texto-simple" class="output-area">
         <textarea id="resultado-texto" readonly></textarea>
     </div>
 
     <script>
-        // Actualizar variables CSS en tiempo real
         function updateColors() {
-            const primary = document.getElementById('colPrimary').value;
-            const secondary = document.getElementById('colSecondary').value;
-            const accent = document.getElementById('colAccent').value;
-
             const root = document.documentElement;
-            root.style.setProperty('--primary', primary);
-            root.style.setProperty('--secondary', secondary);
-            root.style.setProperty('--accent', accent);
+            root.style.setProperty('--primary', document.getElementById('colPrimary').value);
+            root.style.setProperty('--accent', document.getElementById('colAccent').value);
+        }
+
+        function countLines(text) {
+            if(!text.trim()) return 0;
+            return text.split(/\n/).filter(line => line.trim().length > 0).length;
         }
 
         function agregarActividad() {
+            const container = document.getElementById('lista-actividades');
+            const count = container.children.length + 1;
+            
             const div = document.createElement('div');
             div.className = 'actividad-extra';
             div.innerHTML = `
-                <button class="btn-remove" onclick="this.parentElement.remove()" title="Eliminar actividad">×</button>
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
-                    <div>
-                        <label>Nombre de la Actividad:</label>
-                        <input type="text" class="act-nombre" placeholder="Ej. Concurso de Formaciones">
-                    </div>
-                    <div>
-                        <label>Horario / Duración:</label>
-                        <input type="text" class="act-horario" placeholder="Ej. 10:00 - 10:20 (20 min)">
-                    </div>
+                <div class="actividad-counter">Actividad ${count}</div>
+                <button class="btn-remove" onclick="this.parentElement.remove(); reenumerar(); calcularPuntaje();">×</button>
+                
+                <div class="grid-2">
+                    <div><label>Nombre:</label><input type="text" class="act-nombre" placeholder="Nombre clave"></div>
+                    <div><label>Horario:</label><input type="text" class="act-horario" placeholder="10:00 - 10:30"></div>
                 </div>
                 
-                <label>Objetivo:</label>
-                <input type="text" class="act-objetivo" placeholder="¿Qué se busca lograr?">
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label>Encargado:</label>
-                        <input type="text" class="act-encargado">
-                    </div>
-                    <div>
-                        <label>Materiales:</label>
-                        <input type="text" class="act-materiales">
-                    </div>
+                <div class="grid-2">
+                    <div><label>Objetivo:</label><input type="text" class="act-objetivo"></div>
+                    <div><label>Aspectos (Ej. Técnico, Físico):</label><input type="text" class="act-aspectos"></div>
                 </div>
 
-                <label>Procedimiento:</label>
-                <textarea class="act-procedimiento" rows="4" placeholder="Describa las reglas y pasos..."></textarea>
+                <div class="grid-2">
+                    <div><label>Encargado:</label><input type="text" class="act-encargado"></div>
+                    <div><label>Material:</label><input type="text" class="act-materiales"></div>
+                </div>
+
+                <label>Procedimiento (Mínimo 5 Pasos/Renglones):</label>
+                <span class="counter-badge step-counter">0/5 pasos</span>
+                <textarea class="act-procedimiento" rows="6" placeholder="Paso 1...&#10;Paso 2...&#10;Paso 3...&#10;Paso 4...&#10;Paso 5..."></textarea>
             `;
-            document.getElementById('lista-actividades').appendChild(div);
+            container.appendChild(div);
+            calcularPuntaje();
         }
 
-        // Iniciar con una actividad vacía
-        window.onload = function() {
-            agregarActividad();
-        };
+        function reenumerar() {
+            document.querySelectorAll('.actividad-extra').forEach((act, index) => {
+                act.querySelector('.actividad-counter').innerText = `Actividad ${index + 1}`;
+            });
+        }
+
+        window.onload = function() { agregarActividad(); calcularPuntaje(); };
 
         function mostrarTab(tabName) {
             document.querySelectorAll('.output-area').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            
             if (tabName === 'vista') {
                 document.getElementById('vista-previa').classList.add('active');
                 document.querySelector('.tab:nth-child(1)').classList.add('active');
@@ -390,64 +353,179 @@
             }
         }
 
-        function generarDocumento() {
-            const fecha = document.getElementById('fecha').value || "[Fecha]";
-            const ubicacion = document.getElementById('ubicacion').value;
+        // --- SISTEMA DE PUNTUACIÓN ESTRICTO ---
+        function calcularPuntaje() {
+            let score = 0;
+            let missing = [];
 
-            // --- 1. Generar Vista Previa (HTML) ---
-            document.getElementById('doc-titulo').innerText = `Planeación ${fecha}`;
-            document.getElementById('doc-subtitulo').innerText = `Ubicación: ${ubicacion}`;
+            // 1. Datos Básicos (5%)
+            if (val('nombreEscuadra') && val('fecha')) score += 5;
+            else missing.push("Faltan Datos Generales");
 
-            const listaHTML = document.getElementById('doc-actividades-lista');
-            listaHTML.innerHTML = ''; // Limpiar
-
-            // --- 2. Generar Texto Simple ---
-            let texto = `PLANIFICACIÓN DE ACTIVIDADES SABATINAS ${fecha.toUpperCase()}\n`;
-            texto += `Ubicación: ${ubicacion}\n`;
-            texto += `========================================\n\n`;
-
-            const actividades = document.querySelectorAll('.actividad-extra');
-            
-            if (actividades.length === 0) {
-                listaHTML.innerHTML = '<p style="text-align:center">No hay actividades registradas.</p>';
+            // 2. Objetivos Semestrales (15%) - REGLA: MÍNIMO 3
+            const semText = document.getElementById('objSemestral').value;
+            const semCount = countLines(semText);
+            const badgeSem = document.getElementById('count-sem');
+            badgeSem.innerText = `${semCount}/3`;
+            if(semCount >= 3) {
+                score += 15;
+                badgeSem.className = "counter-badge ok";
+            } else {
+                badgeSem.className = "counter-badge bad";
+                missing.push(`Objetivos Semestrales insuficientes (${semCount}/3)`);
             }
 
-            actividades.forEach((act) => {
-                const nombre = act.querySelector('.act-nombre').value || "(Sin nombre)";
-                const horario = act.querySelector('.act-horario').value || "";
-                const objetivo = act.querySelector('.act-objetivo').value || "-";
-                const encargado = act.querySelector('.act-encargado').value || "-";
-                const material = act.querySelector('.act-materiales').value || "-";
-                const proced = act.querySelector('.act-procedimiento').value || "-";
+            // 3. Objetivos Sábado (15%) - REGLA: MÍNIMO 5
+            const sabText = document.getElementById('objSabado').value;
+            const sabCount = countLines(sabText);
+            const badgeSab = document.getElementById('count-sab');
+            badgeSab.innerText = `${sabCount}/5`;
+            if(sabCount >= 5) {
+                score += 15;
+                badgeSab.className = "counter-badge ok";
+            } else {
+                badgeSab.className = "counter-badge bad";
+                missing.push(`Objetivos del Sábado insuficientes (${sabCount}/5)`);
+            }
 
-                // Agregar al HTML (Vista Previa)
-                const divAct = document.createElement('div');
-                divAct.className = 'doc-activity';
-                divAct.innerHTML = `
-                    <div class="doc-activity-title">
-                        <span>${nombre}</span>
-                        <span>${horario}</span>
+            // 4. Asistencia y Materiales (15%)
+            if (val('confirmados')) score += 5; else missing.push("Falta Lista de Asistencia");
+            if (val('matEscuadra') || val('matGeneral')) score += 5; else missing.push("Faltan Materiales");
+            if (val('maquetaTema') || val('maquetaSpecs')) score += 5; else missing.push("Falta Maqueta");
+
+            // 5. Cantidad de Actividades (20%) - REGLA: MÍNIMO 4
+            const acts = document.querySelectorAll('.actividad-extra');
+            if (acts.length >= 4) {
+                score += 20;
+            } else {
+                missing.push(`Se requieren mínimo 4 actividades (Tienes ${acts.length})`);
+            }
+
+            // 6. Calidad de Actividades (30%) - REGLA: MÍNIMO 5 PASOS
+            if (acts.length > 0) {
+                let validActivities = 0;
+                let detailsMissing = false;
+                
+                acts.forEach(act => {
+                    const procText = act.querySelector('.act-procedimiento').value;
+                    const steps = countLines(procText);
+                    const badge = act.querySelector('.step-counter');
+                    
+                    // Actualizar contador visual
+                    badge.innerText = `${steps}/5 pasos`;
+                    badge.className = steps >= 5 ? "counter-badge ok" : "counter-badge bad";
+
+                    const hasAspects = act.querySelector('.act-aspectos').value.trim() !== "";
+                    
+                    if (steps >= 5 && hasAspects) {
+                        validActivities++;
+                    } else {
+                        detailsMissing = true;
+                    }
+                });
+
+                // Cálculo proporcional
+                score += (validActivities / acts.length) * 30;
+                
+                if (detailsMissing) missing.push("Algunas actividades tienen menos de 5 pasos o faltan aspectos.");
+            } else {
+                missing.push("No hay actividades registradas");
+            }
+
+            // Actualizar UI Score
+            score = Math.min(100, Math.round(score));
+            const panel = document.getElementById('score-panel');
+            const scoreTxt = document.getElementById('score-value');
+            const list = document.getElementById('missing-list');
+            
+            scoreTxt.innerText = score + "%";
+            list.innerHTML = missing.map(m => `<li>• ${m}</li>`).join('');
+            list.style.display = score === 100 ? 'none' : 'block';
+
+            if (score === 100) {
+                panel.style.borderLeftColor = 'var(--success)';
+                scoreTxt.style.color = 'var(--success)';
+            } else if (score >= 60) {
+                panel.style.borderLeftColor = 'var(--warning)';
+                scoreTxt.style.color = 'var(--warning)';
+            } else {
+                panel.style.borderLeftColor = 'var(--danger)';
+                scoreTxt.style.color = 'var(--danger)';
+            }
+        }
+
+        function val(id) { return document.getElementById(id).value.trim() !== ""; }
+
+        function generarDocumento() {
+            const data = {
+                escuadra: document.getElementById('nombreEscuadra').value || "NOMBRE ESCUADRA",
+                fecha: document.getElementById('fecha').value || "[FECHA]",
+                ubicacion: document.getElementById('ubicacion').value,
+                confirmados: document.getElementById('confirmados').value,
+                objSem: document.getElementById('objSemestral').value,
+                objSab: document.getElementById('objSabado').value,
+                maqTema: document.getElementById('maquetaTema').value,
+                maqSpecs: document.getElementById('maquetaSpecs').value,
+                matEsc: document.getElementById('matEscuadra').value,
+                matGen: document.getElementById('matGeneral').value
+            };
+
+            document.getElementById('doc-escuadra').innerText = data.escuadra;
+            document.getElementById('doc-fecha').innerText = data.fecha;
+            document.getElementById('doc-ubicacion').innerText = data.ubicacion;
+            document.getElementById('doc-confirmados').innerText = data.confirmados || "-";
+            document.getElementById('doc-obj-semestral').innerText = data.objSem || "-";
+            document.getElementById('doc-obj-sabado').innerText = data.objSab || "-";
+            document.getElementById('doc-maqueta').innerText = (data.maqTema || "N/A") + " - " + (data.maqSpecs || "");
+            document.getElementById('doc-mat-escuadra').innerText = data.matEsc || "-";
+            document.getElementById('doc-mat-general').innerText = data.matGen || "-";
+            document.getElementById('doc-calidad-final').innerText = `CALIFICACIÓN: ${document.getElementById('score-value').innerText}`;
+
+            const container = document.getElementById('doc-actividades-lista');
+            container.innerHTML = '';
+            
+            let txt = `PLANIFICACIÓN ${data.escuadra.toUpperCase()} - ${data.fecha}\nUBICACIÓN: ${data.ubicacion}\n\n`;
+            txt += `OBJ. SEMESTRALES:\n${data.objSem}\n\nOBJ. SÁBADO:\n${data.objSab}\n\n`;
+            txt += `ENTREGABLES: ${data.maqTema} (${data.maqSpecs})\n`;
+            txt += `MATERIALES: ${data.matEsc} | ${data.matGen}\n`;
+            txt += `========================================\n\n`;
+
+            document.querySelectorAll('.actividad-extra').forEach(act => {
+                const vals = {
+                    nombre: act.querySelector('.act-nombre').value || "ACTIVIDAD",
+                    horario: act.querySelector('.act-horario').value,
+                    obj: act.querySelector('.act-objetivo').value,
+                    asp: act.querySelector('.act-aspectos').value,
+                    enc: act.querySelector('.act-encargado').value,
+                    mat: act.querySelector('.act-materiales').value,
+                    proc: act.querySelector('.act-procedimiento').value
+                };
+
+                const div = document.createElement('div');
+                div.className = 'doc-activity';
+                div.innerHTML = `
+                    <div class="doc-activity-header">
+                        <span class="doc-act-name">${vals.nombre}</span>
+                        <span class="doc-act-time">${vals.horario}</span>
                     </div>
-                    <div class="doc-details">
-                        <div class="doc-field"><span class="doc-label">Objetivo:</span> ${objetivo}</div>
-                        <div class="doc-field"><span class="doc-label">Encargado:</span> ${encargado} &nbsp;|&nbsp; <span class="doc-label">Material:</span> ${material}</div>
-                        <div class="doc-field" style="margin-top:10px;">
-                            <span class="doc-label">Procedimiento:</span><br>
-                            <span style="white-space: pre-wrap; font-style: italic;">${proced}</span>
+                    <div class="doc-act-body">
+                        <div style="margin-bottom:8px;"><span class="doc-tag">OBJETIVO:</span> ${vals.obj}</div>
+                        <div style="margin-bottom:12px;"><span class="doc-tag">ASPECTOS:</span> ${vals.asp}</div>
+                        <div style="font-size:12px; color:#555; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:5px;">
+                            <strong>ENCARGADO:</strong> ${vals.enc} &nbsp;|&nbsp; <strong>MATERIAL:</strong> ${vals.mat}
                         </div>
+                        <div style="white-space: pre-wrap;">${vals.proc}</div>
                     </div>
                 `;
-                listaHTML.appendChild(divAct);
+                container.appendChild(div);
 
-                // Agregar al Texto Simple
-                texto += `▶ ${nombre.toUpperCase()} (${horario})\n`;
-                texto += `Objetivo: ${objetivo}\n`;
-                texto += `Encargado: ${encargado} | Material: ${material}\n`;
-                texto += `Procedimiento:\n${proced}\n`;
-                texto += `----------------------------------------\n\n`;
+                txt += `> ${vals.nombre.toUpperCase()} (${vals.horario})\n`;
+                txt += `Obj: ${vals.obj}\nAspectos: ${vals.asp}\n`;
+                txt += `Encargado: ${vals.enc} | Material: ${vals.mat}\n`;
+                txt += `----------------------------------------\n${vals.proc}\n\n`;
             });
 
-            document.getElementById('resultado-texto').value = texto;
+            document.getElementById('resultado-texto').value = txt;
         }
     </script>
 </body>
