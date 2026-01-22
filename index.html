@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planificación de actividades sabatinas - Nivel Pro</title>
+    <title>Planificación de actividades sabatinas</title>
     <style>
         :root {
             --primary: #2c3e50;    
@@ -92,6 +92,22 @@
         }
         .btn-remove:hover { background-color: var(--danger); color: white; border-color: var(--danger); }
 
+        /* Estilos específicos para los pasos */
+        .pasos-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+        .paso-item textarea {
+            border-left: 3px solid var(--accent);
+            height: 80px;
+        }
+
         /* --- PREVIEW --- */
         .tabs { margin-top: 40px; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
         .tab { padding: 12px 25px; cursor: pointer; background: none; border: none; font-size: 14px; color: #777; border-bottom: 3px solid transparent; margin-bottom: -2px; font-weight: 600; }
@@ -126,7 +142,7 @@
 
     <header class="no-print">
         <div class="header-top">
-            <h1>Planificación Sabatina Pro</h1>
+            <h1>Planificación de actividades sabatinas</h1>
             <div class="color-controls">
                 <input type="color" id="colPrimary" value="#2c3e50" oninput="updateColors()">
                 <input type="color" id="colAccent" value="#3498db" oninput="updateColors()">
@@ -279,7 +295,7 @@
         </div>
 
         <div style="margin-top: 50px; border-top: 1px solid #ccc; padding-top: 10px; display: flex; justify-content: space-between; font-size: 11px; color: #777;">
-            <span>Documento generado con Planificador v6</span>
+            <span>Un mismo ideal Mauna Kea hasta el final.</span>
             <span id="doc-calidad-final" style="font-weight: bold;">Calidad: 0%</span>
         </div>
     </div>
@@ -289,19 +305,25 @@
     </div>
 
     <script>
+        // Actualizar variables CSS
         function updateColors() {
             const root = document.documentElement;
             root.style.setProperty('--primary', document.getElementById('colPrimary').value);
             root.style.setProperty('--accent', document.getElementById('colAccent').value);
         }
 
+        // Contar líneas no vacías
         function countLines(text) {
+            if(!text) return 0;
             if(!text.trim()) return 0;
             return text.split(/\n/).filter(line => line.trim().length > 0).length;
         }
 
+        // Agregar una nueva tarjeta de actividad
         function agregarActividad() {
             const container = document.getElementById('lista-actividades');
+            if (!container) return; // Seguridad extra
+            
             const count = container.children.length + 1;
             
             const div = document.createElement('div');
@@ -325,21 +347,46 @@
                     <div><label>Material:</label><input type="text" class="act-materiales"></div>
                 </div>
 
-                <label>Procedimiento (Mínimo 5 Pasos/Renglones):</label>
-                <span class="counter-badge step-counter">0/5 pasos</span>
-                <textarea class="act-procedimiento" rows="6" placeholder="Paso 1...&#10;Paso 2...&#10;Paso 3...&#10;Paso 4...&#10;Paso 5..."></textarea>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                    <label>Desarrollo de la Actividad (4 Fases):</label>
+                    <span class="counter-badge step-status">0/4 Pasos</span>
+                </div>
+                <div class="pasos-container">
+                    <div class="paso-item">
+                        <label style="font-size:11px; margin-top:0;">Paso 1: Inicio / Explicación</label>
+                        <textarea class="act-paso" rows="2" placeholder="Describir inicio..."></textarea>
+                    </div>
+                    <div class="paso-item">
+                        <label style="font-size:11px; margin-top:0;">Paso 2: Desarrollo</label>
+                        <textarea class="act-paso" rows="2" placeholder="Desarrollo del juego..."></textarea>
+                    </div>
+                    <div class="paso-item">
+                        <label style="font-size:11px; margin-top:0;">Paso 3: Clímax / Reglas</label>
+                        <textarea class="act-paso" rows="2" placeholder="Reglas o clímax..."></textarea>
+                    </div>
+                    <div class="paso-item">
+                        <label style="font-size:11px; margin-top:0;">Paso 4: Cierre / Conclusión</label>
+                        <textarea class="act-paso" rows="2" placeholder="Cómo termina..."></textarea>
+                    </div>
+                </div>
             `;
             container.appendChild(div);
             calcularPuntaje();
         }
 
+        // Renumerar actividades al borrar
         function reenumerar() {
             document.querySelectorAll('.actividad-extra').forEach((act, index) => {
-                act.querySelector('.actividad-counter').innerText = `Actividad ${index + 1}`;
+                const badge = act.querySelector('.actividad-counter');
+                if (badge) badge.innerText = `Actividad ${index + 1}`;
             });
         }
 
-        window.onload = function() { agregarActividad(); calcularPuntaje(); };
+        // Inicializar
+        window.addEventListener('DOMContentLoaded', (event) => {
+            agregarActividad();
+            // calcularPuntaje ya se llama dentro de agregarActividad
+        });
 
         function mostrarTab(tabName) {
             document.querySelectorAll('.output-area').forEach(el => el.classList.remove('active'));
@@ -353,7 +400,7 @@
             }
         }
 
-        // --- SISTEMA DE PUNTUACIÓN ESTRICTO ---
+        // --- SISTEMA DE PUNTUACIÓN (CON 4 PASOS) ---
         function calcularPuntaje() {
             let score = 0;
             let missing = [];
@@ -363,29 +410,31 @@
             else missing.push("Faltan Datos Generales");
 
             // 2. Objetivos Semestrales (15%) - REGLA: MÍNIMO 3
-            const semText = document.getElementById('objSemestral').value;
-            const semCount = countLines(semText);
-            const badgeSem = document.getElementById('count-sem');
-            badgeSem.innerText = `${semCount}/3`;
-            if(semCount >= 3) {
-                score += 15;
-                badgeSem.className = "counter-badge ok";
-            } else {
-                badgeSem.className = "counter-badge bad";
-                missing.push(`Objetivos Semestrales insuficientes (${semCount}/3)`);
+            const semEl = document.getElementById('objSemestral');
+            if (semEl) {
+                const semText = semEl.value;
+                const semCount = countLines(semText);
+                const badgeSem = document.getElementById('count-sem');
+                if (badgeSem) {
+                    badgeSem.innerText = `${semCount}/3`;
+                    badgeSem.className = semCount >= 3 ? "counter-badge ok" : "counter-badge bad";
+                }
+                if(semCount >= 3) score += 15;
+                else missing.push(`Objetivos Semestrales insuficientes (${semCount}/3)`);
             }
 
             // 3. Objetivos Sábado (15%) - REGLA: MÍNIMO 5
-            const sabText = document.getElementById('objSabado').value;
-            const sabCount = countLines(sabText);
-            const badgeSab = document.getElementById('count-sab');
-            badgeSab.innerText = `${sabCount}/5`;
-            if(sabCount >= 5) {
-                score += 15;
-                badgeSab.className = "counter-badge ok";
-            } else {
-                badgeSab.className = "counter-badge bad";
-                missing.push(`Objetivos del Sábado insuficientes (${sabCount}/5)`);
+            const sabEl = document.getElementById('objSabado');
+            if (sabEl) {
+                const sabText = sabEl.value;
+                const sabCount = countLines(sabText);
+                const badgeSab = document.getElementById('count-sab');
+                if (badgeSab) {
+                    badgeSab.innerText = `${sabCount}/5`;
+                    badgeSab.className = sabCount >= 5 ? "counter-badge ok" : "counter-badge bad";
+                }
+                if(sabCount >= 5) score += 15;
+                else missing.push(`Objetivos del Sábado insuficientes (${sabCount}/5)`);
             }
 
             // 4. Asistencia y Materiales (15%)
@@ -401,23 +450,27 @@
                 missing.push(`Se requieren mínimo 4 actividades (Tienes ${acts.length})`);
             }
 
-            // 6. Calidad de Actividades (30%) - REGLA: MÍNIMO 5 PASOS
+            // 6. Calidad de Actividades (30%) - REGLA: 4 PASOS COMPLETOS
             if (acts.length > 0) {
                 let validActivities = 0;
                 let detailsMissing = false;
                 
                 acts.forEach(act => {
-                    const procText = act.querySelector('.act-procedimiento').value;
-                    const steps = countLines(procText);
-                    const badge = act.querySelector('.step-counter');
-                    
-                    // Actualizar contador visual
-                    badge.innerText = `${steps}/5 pasos`;
-                    badge.className = steps >= 5 ? "counter-badge ok" : "counter-badge bad";
+                    const pasosInputs = act.querySelectorAll('.act-paso');
+                    let filledSteps = 0;
+                    pasosInputs.forEach(input => {
+                        if (input.value.trim() !== "") filledSteps++;
+                    });
+
+                    const badge = act.querySelector('.step-status');
+                    if (badge) {
+                        badge.innerText = `${filledSteps}/4 Pasos`;
+                        badge.className = filledSteps === 4 ? "counter-badge ok" : "counter-badge bad";
+                    }
 
                     const hasAspects = act.querySelector('.act-aspectos').value.trim() !== "";
                     
-                    if (steps >= 5 && hasAspects) {
+                    if (filledSteps === 4 && hasAspects) {
                         validActivities++;
                     } else {
                         detailsMissing = true;
@@ -427,7 +480,7 @@
                 // Cálculo proporcional
                 score += (validActivities / acts.length) * 30;
                 
-                if (detailsMissing) missing.push("Algunas actividades tienen menos de 5 pasos o faltan aspectos.");
+                if (detailsMissing) missing.push("Completa los 4 pasos y aspectos en todas las actividades.");
             } else {
                 missing.push("No hay actividades registradas");
             }
@@ -438,94 +491,135 @@
             const scoreTxt = document.getElementById('score-value');
             const list = document.getElementById('missing-list');
             
-            scoreTxt.innerText = score + "%";
-            list.innerHTML = missing.map(m => `<li>• ${m}</li>`).join('');
-            list.style.display = score === 100 ? 'none' : 'block';
+            if (scoreTxt) scoreTxt.innerText = score + "%";
+            
+            if (list) {
+                list.innerHTML = missing.map(m => `<li>• ${m}</li>`).join('');
+                list.style.display = score === 100 ? 'none' : 'block';
+            }
 
-            if (score === 100) {
-                panel.style.borderLeftColor = 'var(--success)';
-                scoreTxt.style.color = 'var(--success)';
-            } else if (score >= 60) {
-                panel.style.borderLeftColor = 'var(--warning)';
-                scoreTxt.style.color = 'var(--warning)';
-            } else {
-                panel.style.borderLeftColor = 'var(--danger)';
-                scoreTxt.style.color = 'var(--danger)';
+            if (panel && scoreTxt) {
+                if (score === 100) {
+                    panel.style.borderLeftColor = 'var(--success)';
+                    scoreTxt.style.color = 'var(--success)';
+                } else if (score >= 60) {
+                    panel.style.borderLeftColor = 'var(--warning)';
+                    scoreTxt.style.color = 'var(--warning)';
+                } else {
+                    panel.style.borderLeftColor = 'var(--danger)';
+                    scoreTxt.style.color = 'var(--danger)';
+                }
             }
         }
 
-        function val(id) { return document.getElementById(id).value.trim() !== ""; }
+        // Función segura para obtener valor
+        function val(id) { 
+            const el = document.getElementById(id);
+            return el ? el.value.trim() !== "" : false; 
+        }
 
         function generarDocumento() {
-            const data = {
-                escuadra: document.getElementById('nombreEscuadra').value || "NOMBRE ESCUADRA",
-                fecha: document.getElementById('fecha').value || "[FECHA]",
-                ubicacion: document.getElementById('ubicacion').value,
-                confirmados: document.getElementById('confirmados').value,
-                objSem: document.getElementById('objSemestral').value,
-                objSab: document.getElementById('objSabado').value,
-                maqTema: document.getElementById('maquetaTema').value,
-                maqSpecs: document.getElementById('maquetaSpecs').value,
-                matEsc: document.getElementById('matEscuadra').value,
-                matGen: document.getElementById('matGeneral').value
+            // Helper para obtener valor seguro
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value : "";
             };
 
-            document.getElementById('doc-escuadra').innerText = data.escuadra;
-            document.getElementById('doc-fecha').innerText = data.fecha;
-            document.getElementById('doc-ubicacion').innerText = data.ubicacion;
-            document.getElementById('doc-confirmados').innerText = data.confirmados || "-";
-            document.getElementById('doc-obj-semestral').innerText = data.objSem || "-";
-            document.getElementById('doc-obj-sabado').innerText = data.objSab || "-";
-            document.getElementById('doc-maqueta').innerText = (data.maqTema || "N/A") + " - " + (data.maqSpecs || "");
-            document.getElementById('doc-mat-escuadra').innerText = data.matEsc || "-";
-            document.getElementById('doc-mat-general').innerText = data.matGen || "-";
-            document.getElementById('doc-calidad-final').innerText = `CALIFICACIÓN: ${document.getElementById('score-value').innerText}`;
+            const data = {
+                escuadra: getVal('nombreEscuadra') || "NOMBRE ESCUADRA",
+                fecha: getVal('fecha') || "[FECHA]",
+                ubicacion: getVal('ubicacion'),
+                confirmados: getVal('confirmados'),
+                objSem: getVal('objSemestral'),
+                objSab: getVal('objSabado'),
+                maqTema: getVal('maquetaTema'),
+                maqSpecs: getVal('maquetaSpecs'),
+                matEsc: getVal('matEscuadra'),
+                matGen: getVal('matGeneral')
+            };
+
+            // Asignar textos a la vista previa (con chequeos de null)
+            const setText = (id, txt) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = txt || "-";
+            };
+
+            setText('doc-escuadra', data.escuadra);
+            setText('doc-fecha', data.fecha);
+            setText('doc-ubicacion', data.ubicacion);
+            setText('doc-confirmados', data.confirmados);
+            setText('doc-obj-semestral', data.objSem);
+            setText('doc-obj-sabado', data.objSab);
+            setText('doc-maqueta', (data.maqTema || "N/A") + " - " + (data.maqSpecs || ""));
+            setText('doc-mat-escuadra', data.matEsc);
+            setText('doc-mat-general', data.matGen);
+            
+            const scoreVal = document.getElementById('score-value');
+            if (scoreVal) setText('doc-calidad-final', `CALIFICACIÓN: ${scoreVal.innerText}`);
 
             const container = document.getElementById('doc-actividades-lista');
-            container.innerHTML = '';
-            
-            let txt = `PLANIFICACIÓN ${data.escuadra.toUpperCase()} - ${data.fecha}\nUBICACIÓN: ${data.ubicacion}\n\n`;
-            txt += `OBJ. SEMESTRALES:\n${data.objSem}\n\nOBJ. SÁBADO:\n${data.objSab}\n\n`;
-            txt += `ENTREGABLES: ${data.maqTema} (${data.maqSpecs})\n`;
-            txt += `MATERIALES: ${data.matEsc} | ${data.matGen}\n`;
-            txt += `========================================\n\n`;
+            if (container) {
+                container.innerHTML = '';
+                
+                let txt = `PLANIFICACIÓN ${data.escuadra.toUpperCase()} - ${data.fecha}\nUBICACIÓN: ${data.ubicacion}\n\n`;
+                txt += `OBJ. SEMESTRALES:\n${data.objSem}\n\nOBJ. SÁBADO:\n${data.objSab}\n\n`;
+                txt += `ENTREGABLES: ${data.maqTema} (${data.maqSpecs})\n`;
+                txt += `MATERIALES: ${data.matEsc} | ${data.matGen}\n`;
+                txt += `========================================\n\n`;
 
-            document.querySelectorAll('.actividad-extra').forEach(act => {
-                const vals = {
-                    nombre: act.querySelector('.act-nombre').value || "ACTIVIDAD",
-                    horario: act.querySelector('.act-horario').value,
-                    obj: act.querySelector('.act-objetivo').value,
-                    asp: act.querySelector('.act-aspectos').value,
-                    enc: act.querySelector('.act-encargado').value,
-                    mat: act.querySelector('.act-materiales').value,
-                    proc: act.querySelector('.act-procedimiento').value
-                };
+                document.querySelectorAll('.actividad-extra').forEach(act => {
+                    const getSubVal = (cls) => {
+                        const el = act.querySelector(cls);
+                        return el ? el.value : "";
+                    };
 
-                const div = document.createElement('div');
-                div.className = 'doc-activity';
-                div.innerHTML = `
-                    <div class="doc-activity-header">
-                        <span class="doc-act-name">${vals.nombre}</span>
-                        <span class="doc-act-time">${vals.horario}</span>
-                    </div>
-                    <div class="doc-act-body">
-                        <div style="margin-bottom:8px;"><span class="doc-tag">OBJETIVO:</span> ${vals.obj}</div>
-                        <div style="margin-bottom:12px;"><span class="doc-tag">ASPECTOS:</span> ${vals.asp}</div>
-                        <div style="font-size:12px; color:#555; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:5px;">
-                            <strong>ENCARGADO:</strong> ${vals.enc} &nbsp;|&nbsp; <strong>MATERIAL:</strong> ${vals.mat}
+                    const vals = {
+                        nombre: getSubVal('.act-nombre') || "ACTIVIDAD",
+                        horario: getSubVal('.act-horario'),
+                        obj: getSubVal('.act-objetivo'),
+                        asp: getSubVal('.act-aspectos'),
+                        enc: getSubVal('.act-encargado'),
+                        mat: getSubVal('.act-materiales')
+                    };
+
+                    // Recolectar pasos
+                    let pasosHTML = "";
+                    let pasosTxt = "";
+                    const pasosInputs = act.querySelectorAll('.act-paso');
+                    pasosInputs.forEach((input, idx) => {
+                        const pasoNum = idx + 1;
+                        const contenido = input.value.trim() || "(Sin contenido)";
+                        pasosHTML += `<div style="margin-bottom:5px;"><strong>${pasoNum}.</strong> ${contenido}</div>`;
+                        pasosTxt += `${pasoNum}. ${contenido}\n`;
+                    });
+
+                    const div = document.createElement('div');
+                    div.className = 'doc-activity';
+                    div.innerHTML = `
+                        <div class="doc-activity-header">
+                            <span class="doc-act-name">${vals.nombre}</span>
+                            <span class="doc-act-time">${vals.horario}</span>
                         </div>
-                        <div style="white-space: pre-wrap;">${vals.proc}</div>
-                    </div>
-                `;
-                container.appendChild(div);
+                        <div class="doc-act-body">
+                            <div style="margin-bottom:8px;"><span class="doc-tag">OBJETIVO:</span> ${vals.obj}</div>
+                            <div style="margin-bottom:12px;"><span class="doc-tag">ASPECTOS:</span> ${vals.asp}</div>
+                            <div style="font-size:12px; color:#555; margin-bottom:12px; border-bottom:1px solid #eee; padding-bottom:5px;">
+                                <strong>ENCARGADO:</strong> ${vals.enc} &nbsp;|&nbsp; <strong>MATERIAL:</strong> ${vals.mat}
+                            </div>
+                            <div style="white-space: pre-wrap; margin-top:10px; background:#f9f9f9; padding:10px; border-radius:4px;">${pasosHTML}</div>
+                        </div>
+                    `;
+                    container.appendChild(div);
 
-                txt += `> ${vals.nombre.toUpperCase()} (${vals.horario})\n`;
-                txt += `Obj: ${vals.obj}\nAspectos: ${vals.asp}\n`;
-                txt += `Encargado: ${vals.enc} | Material: ${vals.mat}\n`;
-                txt += `----------------------------------------\n${vals.proc}\n\n`;
-            });
+                    txt += `> ${vals.nombre.toUpperCase()} (${vals.horario})\n`;
+                    txt += `Obj: ${vals.obj}\nAspectos: ${vals.asp}\n`;
+                    txt += `Encargado: ${vals.enc} | Material: ${vals.mat}\n`;
+                    txt += `----------------------------------------\n${pasosTxt}\n\n`;
+                });
 
-            document.getElementById('resultado-texto').value = txt;
+                const txtArea = document.getElementById('resultado-texto');
+                if (txtArea) txtArea.value = txt;
+            }
         }
     </script>
 </body>
