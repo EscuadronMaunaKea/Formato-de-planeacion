@@ -39,15 +39,79 @@
         .color-controls { display: flex; gap: 10px; background: var(--secondary); padding: 8px 15px; border-radius: 50px; }
         input[type="color"] { border: none; width: 25px; height: 25px; cursor: pointer; background: none; padding: 0; }
 
-        /* --- PANEL DE PUNTUACIÓN --- */
+        /* --- PANEL DE PUNTUACIÓN FLOTANTE (NUEVO DISEÑO) --- */
         #score-panel {
-            position: fixed; bottom: 20px; right: 20px; background: white; padding: 20px;
-            border-radius: 8px; box-shadow: 0 5px 30px rgba(0,0,0,0.25); z-index: 1000;
-            width: 300px; border-left: 8px solid var(--danger); transition: all 0.3s ease;
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: white; 
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
-        #score-value { font-size: 32px; font-weight: 800; color: var(--primary); display: block; text-align: center; margin-bottom: 5px; }
-        #score-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #777; text-align: center; display: block; }
-        #missing-list { font-size: 12px; color: var(--danger); margin-top: 15px; padding-left: 20px; display: none; line-height: 1.4; max-height: 300px; overflow-y: auto; }
+
+        /* Estado Expandido (Normal) */
+        #score-panel.expanded {
+            width: 300px;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 8px solid var(--danger);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        /* Estado Minimizado (Burbuja) */
+        #score-panel.minimized {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            padding: 0;
+            border: 4px solid var(--danger);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        /* Elementos internos */
+        #score-value { 
+            font-weight: 800; 
+            color: var(--primary); 
+            display: block; 
+            text-align: center; 
+        }
+        
+        /* Ajustes de texto según estado */
+        #score-panel.expanded #score-value { font-size: 32px; margin-bottom: 5px; }
+        #score-panel.minimized #score-value { font-size: 16px; margin: 0; }
+
+        #score-label { 
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #777; text-align: center; display: block; 
+        }
+        #missing-list { 
+            font-size: 12px; color: var(--danger); margin-top: 15px; padding-left: 20px; line-height: 1.4; 
+        }
+
+        /* Botón de minimizar dentro del panel expandido */
+        .toggle-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #999;
+            cursor: pointer;
+            display: none; /* Solo visible en expandido */
+        }
+        #score-panel.expanded .toggle-btn { display: block; }
+        #score-panel.minimized .toggle-btn,
+        #score-panel.minimized #score-label,
+        #score-panel.minimized .divider,
+        #score-panel.minimized #missing-list {
+            display: none;
+        }
         
         /* --- UI --- */
         .seccion { 
@@ -107,6 +171,11 @@
             border-left: 3px solid var(--accent);
             height: 80px;
         }
+        /* Responsivo para pasos */
+        @media (max-width: 600px) {
+            .pasos-container { grid-template-columns: 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
 
         /* --- PREVIEW --- */
         .tabs { margin-top: 40px; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
@@ -150,11 +219,12 @@
         </div>
     </header>
 
-    <!-- PANEL DE PUNTUACIÓN -->
-    <div id="score-panel" class="no-print">
+    <!-- PANEL DE PUNTUACIÓN (COLAPSABLE) -->
+    <div id="score-panel" class="no-print expanded" onclick="toggleScorePanel(event)">
+        <button class="toggle-btn" onclick="toggleScorePanel(event)">_</button>
         <span id="score-value">0%</span>
-        <span id="score-label">Calidad de Planeación</span>
-        <div style="height: 1px; background: #eee; margin: 10px 0;"></div>
+        <span id="score-label">Calidad</span>
+        <div class="divider" style="height: 1px; background: #eee; margin: 10px 0;"></div>
         <ul id="missing-list"></ul>
     </div>
 
@@ -295,7 +365,7 @@
         </div>
 
         <div style="margin-top: 50px; border-top: 1px solid #ccc; padding-top: 10px; display: flex; justify-content: space-between; font-size: 11px; color: #777;">
-            <span>Un mismo ideal Mauna Kea hasta el final.</span>
+            <span>Un mismo ideal Mauna Kea</span>
             <span id="doc-calidad-final" style="font-weight: bold;">Calidad: 0%</span>
         </div>
     </div>
@@ -310,6 +380,36 @@
             const root = document.documentElement;
             root.style.setProperty('--primary', document.getElementById('colPrimary').value);
             root.style.setProperty('--accent', document.getElementById('colAccent').value);
+        }
+
+        // Lógica para colapsar/expandir el panel de puntaje
+        function toggleScorePanel(event) {
+            // Si hacen click en el botón de minimizar, evitamos que se propague doble
+            if (event.target.classList.contains('toggle-btn')) {
+                //stopPropagation si fuera necesario, pero la lógica de clases lo maneja
+            }
+            
+            const panel = document.getElementById('score-panel');
+            // Si está expandido, lo minimizamos
+            if (panel.classList.contains('expanded')) {
+                panel.classList.remove('expanded');
+                panel.classList.add('minimized');
+            } else {
+                // Si está minimizado, lo expandimos
+                panel.classList.remove('minimized');
+                panel.classList.add('expanded');
+            }
+        }
+
+        // Iniciar minimizado en móviles
+        function checkMobileInit() {
+            if (window.innerWidth < 768) {
+                const panel = document.getElementById('score-panel');
+                if(panel) {
+                    panel.classList.remove('expanded');
+                    panel.classList.add('minimized');
+                }
+            }
         }
 
         // Contar líneas no vacías
@@ -385,7 +485,7 @@
         // Inicializar
         window.addEventListener('DOMContentLoaded', (event) => {
             agregarActividad();
-            // calcularPuntaje ya se llama dentro de agregarActividad
+            checkMobileInit(); // Verificar si es móvil para minimizar
         });
 
         function mostrarTab(tabName) {
@@ -400,7 +500,7 @@
             }
         }
 
-        // --- SISTEMA DE PUNTUACIÓN (CON 4 PASOS) ---
+        // --- SISTEMA DE PUNTUACIÓN ---
         function calcularPuntaje() {
             let score = 0;
             let missing = [];
@@ -499,16 +599,18 @@
             }
 
             if (panel && scoreTxt) {
-                if (score === 100) {
-                    panel.style.borderLeftColor = 'var(--success)';
-                    scoreTxt.style.color = 'var(--success)';
-                } else if (score >= 60) {
-                    panel.style.borderLeftColor = 'var(--warning)';
-                    scoreTxt.style.color = 'var(--warning)';
+                // Actualizar colores del borde según puntaje
+                const color = score === 100 ? 'var(--success)' : (score >= 60 ? 'var(--warning)' : 'var(--danger)');
+                
+                // Si está minimizado, el borde es completo, si no, solo izquierdo
+                if (panel.classList.contains('minimized')) {
+                    panel.style.border = `4px solid ${color}`;
+                    panel.style.borderLeft = `4px solid ${color}`; // Reset en caso de que quede estilo inline
                 } else {
-                    panel.style.borderLeftColor = 'var(--danger)';
-                    scoreTxt.style.color = 'var(--danger)';
+                    panel.style.border = 'none';
+                    panel.style.borderLeft = `8px solid ${color}`;
                 }
+                scoreTxt.style.color = color;
             }
         }
 
